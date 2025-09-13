@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Liste de courses</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <h1>🛒 Liste de courses</h1>
+    <div class="actions">
+      <button id="btn-clear" class="btn light" title="Vider la liste">Vider</button>
+      <button id="btn-copy" class="btn" title="Copier la liste">Copier</button>
+      <button id="btn-print" class="btn" title="Imprimer">Imprimer</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- Catalogue d'articles (déjà sur le site) -->
+    <section class="panel" aria-labelledby="catalog-title">
+      <div class="panel-header">
+        <h2 id="catalog-title">Catalogue</h2>
+        <input id="search" class="search" type="search" placeholder="Rechercher un article…" aria-label="Rechercher dans le catalogue" />
+      </div>
+
+      <div class="filters" role="tablist" aria-label="Catégories">
+        <button class="chip active" data-filter="all" role="tab" aria-selected="true">Tout</button>
+        <button class="chip" data-filter="fruits" role="tab" aria-selected="false">Fruits</button>
+        <button class="chip" data-filter="legumes" role="tab" aria-selected="false">Légumes</button>
+        <button class="chip" data-filter="boulangerie" role="tab" aria-selected="false">Boulangerie</button>
+        <button class="chip" data-filter="frais" role="tab" aria-selected="false">Frais</button>
+        <button class="chip" data-filter="epicerie" role="tab" aria-selected="false">Épicerie</button>
+        <button class="chip" data-filter="boissons" role="tab" aria-selected="false">Boissons</button>
+        <button class="chip" data-filter="hygiene" role="tab" aria-selected="false">Hygiène</button>
+      </div>
+
+      <!-- Items prédéfinis -->
+      <ul id="catalog" class="catalog" aria-live="polite">
+        <!-- Fruits -->
+        <li class="item" data-cat="fruits" data-name="Pommes"><span>🍎 Pommes</span><button class="btn-add" aria-label="Ajouter Pommes" data-id="pommes">Ajouter</button></li>
+        <li class="item" data-cat="fruits" data-name="Bananes"><span>🍌 Bananes</span><button class="btn-add" aria-label="Ajouter Bananes" data-id="bananes">Ajouter</button></li>
+        <li class="item" data-cat="fruits" data-name="Oranges"><span>🍊 Oranges</span><button class="btn-add" aria-label="Ajouter Oranges" data-id="oranges">Ajouter</button></li>
+        <li class="item" data-cat="fruits" data-name="Fraises"><span>🍓 Fraises</span><button class="btn-add" aria-label="Ajouter Fraises" data-id="fraises">Ajouter</button></li>
+
+        <!-- Légumes -->
+        <li class="item" data-cat="legumes" data-name="Tomates"><span>🍅 Tomates</span><button class="btn-add" aria-label="Ajouter Tomates" data-id="tomates">Ajouter</button></li>
+        <li class="item" data-cat="legumes" data-name="Salade"><span>🥬 Salade</span><button class="btn-add" aria-label="Ajouter Salade" data-id="salade">Ajouter</button></li>
+        <li class="item" data-cat="legumes" data-name="Carottes"><span>🥕 Carottes</span><button class="btn-add" aria-label="Ajouter Carottes" data-id="carottes">Ajouter</button></li>
+        <li class="item" data-cat="legumes" data-name="Pommes de terre"><span>🥔 Pommes de terre</span><button class="btn-add" aria-label="Ajouter Pommes de terre" data-id="patates">Ajouter</button></li>
+
+        <!-- Boulangerie -->
+        <li class="item" data-cat="boulangerie" data-name="Baguette"><span>🥖 Baguette</span><button class="btn-add" aria-label="Ajouter Baguette" data-id="baguette">Ajouter</button></li>
+        <li class="item" data-cat="boulangerie" data-name="Pain de mie"><span>🍞 Pain de mie</span><button class="btn-add" aria-label="Ajouter Pain de mie" data-id="pain-mie">Ajouter</button></li>
+        <li class="item" data-cat="boulangerie" data-name="Croissants"><span>🥐 Croissants</span><button class="btn-add" aria-label="Ajouter Croissants" data-id="croissants">Ajouter</button></li>
+
+        <!-- Frais -->
+        <li class="item" data-cat="frais" data-name="Lait"><span>🥛 Lait</span><button class="btn-add" aria-label="Ajouter Lait" data-id="lait">Ajouter</button></li>
+        <li class="item" data-cat="frais" data-name="Beurre"><span>🧈 Beurre</span><button class="btn-add" aria-label="Ajouter Beurre" data-id="beurre">Ajouter</button></li>
+        <li class="item" data-cat="frais" data-name="Œufs"><span>🥚 Œufs</span><button class="btn-add" aria-label="Ajouter Œufs" data-id="oeufs">Ajouter</button></li>
+        <li class="item" data-cat="frais" data-name="Yaourts"><span>🍶 Yaourts</span><button class="btn-add" aria-label="Ajouter Yaourts" data-id="yaourts">Ajouter</button></li>
+
+        <!-- Épicerie -->
+        <li class="item" data-cat="epicerie" data-name="Pâtes"><span>🍝 Pâtes</span><button class="btn-add" aria-label="Ajouter Pâtes" data-id="pates">Ajouter</button></li>
+        <li class="item" data-cat="epicerie" data-name="Riz"><span>🍚 Riz</span><button class="btn-add" aria-label="Ajouter Riz" data-id="riz">Ajouter</button></li>
+        <li class="item" data-cat="epicerie" data-name="Thon"><span>🐟 Thon (boîte)</span><button class="btn-add" aria-label="Ajouter Thon" data-id="thon">Ajouter</button></li>
+        <li class="item" data-cat="epicerie" data-name="Céréales"><span>🥣 Céréales</span><button class="btn-add" aria-label="Ajouter Céréales" data-id="cereales">Ajouter</button></li>
+        <li class="item" data-cat="epicerie" data-name="Café"><span>☕ Café</span><button class="btn-add" aria-label="Ajouter Café" data-id="cafe">Ajouter</button></li>
+        <li class="item" data-cat="epicerie" data-name="Sucre"><span>🧂 Sucre</span><button class="btn-add" aria-label="Ajouter Sucre" data-id="sucre">Ajouter</button></li>
+        <li class="item" data-cat="epicerie" data-name="Farine"><span>🌾 Farine</span><button class="btn-add" aria-label="Ajouter Farine" data-id="farine">Ajouter</button></li>
+
+        <!-- Boissons -->
+        <li class="item" data-cat="boissons" data-name="Eau"><span>💧 Eau</span><button class="btn-add" aria-label="Ajouter Eau" data-id="eau">Ajouter</button></li>
+        <li class="item" data-cat="boissons" data-name="Jus d'orange"><span>🧃 Jus d'orange</span><button class="btn-add" aria-label="Ajouter Jus d'orange" data-id="jus-orange">Ajouter</button></li>
+        <li class="item" data-cat="boissons" data-name="Limonade"><span>🥤 Limonade</span><button class="btn-add" aria-label="Ajouter Limonade" data-id="limonade">Ajouter</button></li>
+
+        <!-- Hygiène -->
+        <li class="item" data-cat="hygiene" data-name="Papier toilette"><span>🧻 Papier toilette</span><button class="btn-add" aria-label="Ajouter Papier toilette" data-id="pq">Ajouter</button></li>
+        <li class="item" data-cat="hygiene" data-name="Dentifrice"><span>🪥 Dentifrice</span><button class="btn-add" aria-label="Ajouter Dentifrice" data-id="dentifrice">Ajouter</button></li>
+        <li class="item" data-cat="hygiene" data-name="Savon"><span>🧼 Savon</span><button class="btn-add" aria-label="Ajouter Savon" data-id="savon">Ajouter</button></li>
+      </ul>
+    </section>
+
+    <!-- Liste sélectionnée -->
+    <section class="panel" aria-labelledby="list-title">
+      <div class="panel-header">
+        <h2 id="list-title">Ma liste</h2>
+        <span class="muted" id="count">0 article</span>
+      </div>
+      <ol id="list" class="list" aria-live="polite"></ol>
+    </section>
+  </main>
+
+  <dialog id="toast" class="toast" aria-live="polite">Copié dans le presse-papiers ✅</dialog>
+
+  <footer class="footer">
+    <small>LocalStorage activé • Hors ligne OK • Glisser-déposer pour réordonner</small>
+  </footer>
+   <script src="script.js"></script>
+</body>
+</html>
