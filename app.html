@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ma liste — FreshList</title>
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/auth.css">
+  <link rel="stylesheet" href="css/app.css">
+  <style>
+    /* ── PAGE APP ── */
+    .app-wrap { max-width: 780px; margin: 0 auto; padding: 48px 28px 80px; }
+
+    /* ── TOP BAR ── */
+    .app-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 32px;
+      gap: 16px;
+    }
+    .app-topbar h1 {
+      font-family: var(--font-display);
+      font-size: 1.9rem;
+      font-weight: 700;
+      color: var(--espresso);
+      line-height: 1.1;
+    }
+    .app-topbar .app-date {
+      font-size: .82rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      margin-top: 3px;
+    }
+    .app-topbar-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+    /* ── PROGRESS STRIP ── */
+    .progress-strip {
+      background: var(--surface);
+      border: 2px solid var(--border-light);
+      border-radius: var(--radius);
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .pstrip-counts {
+      display: flex;
+      gap: 20px;
+      flex-shrink: 0;
+    }
+    .pstrip-count { text-align: center; }
+    .pstrip-num {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--copper);
+      line-height: 1;
+    }
+    .pstrip-label {
+      font-size: .68rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      font-weight: 700;
+    }
+    .pstrip-bar-wrap { flex: 1; display: flex; align-items: center; gap: 12px; }
+    .pstrip-bar {
+      flex: 1;
+      height: 8px;
+      background: var(--border-light);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .pstrip-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--copper), var(--sienna));
+      border-radius: 4px;
+      transition: width .4s var(--ease);
+    }
+    .pstrip-pct {
+      font-size: .82rem;
+      font-weight: 700;
+      color: var(--copper);
+      min-width: 36px;
+      text-align: right;
+    }
+
+    /* ── TOOLBAR ── */
+    .app-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .filter-tabs {
+      display: flex;
+      background: var(--surface);
+      border: 2px solid var(--border-light);
+      border-radius: var(--radius-sm);
+      padding: 3px;
+      gap: 2px;
+    }
+    .ftab {
+      padding: 5px 16px;
+      border: none;
+      border-radius: 6px;
+      font-family: var(--font-body);
+      font-size: .82rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      background: transparent;
+      transition: all .15s;
+      cursor: pointer;
+    }
+    .ftab:hover { color: var(--copper); }
+    .ftab.active { background: var(--copper); color: #fff; }
+
+    .app-search {
+      margin-left: auto;
+      position: relative;
+    }
+    .app-search svg {
+      position: absolute; left: 11px; top: 50%;
+      transform: translateY(-50%);
+      width: 14px; height: 14px;
+      stroke: var(--text-light); fill: none;
+      stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round;
+      pointer-events: none;
+    }
+    .app-search input {
+      padding: 8px 14px 8px 33px;
+      border: 2px solid var(--border);
+      border-radius: 20px;
+      font-size: .85rem;
+      font-family: var(--font-body);
+      font-weight: 500;
+      background: var(--surface);
+      color: var(--text);
+      outline: none;
+      width: 200px;
+      transition: all .15s;
+    }
+    .app-search input:focus {
+      border-color: var(--copper);
+      box-shadow: 0 0 0 3px rgba(192,133,82,.12);
+      width: 240px;
+    }
+
+    /* ── RAYON SHORTCUTS ── */
+    .rayon-shortcuts {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .rayon-chip {
+      padding: 5px 13px;
+      border: 2px solid var(--border-light);
+      border-radius: 20px;
+      font-size: .78rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: all .15s;
+      background: var(--surface);
+    }
+    .rayon-chip:hover { border-color: var(--copper); color: var(--copper); }
+
+    /* ── LISTE ── */
+    .list-card {
+      background: var(--surface);
+      border: 2px solid var(--border-light);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    /* Section par rayon */
+    .rayon-section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 18px 10px;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border-light);
+    }
+    .rayon-section-header + .rayon-section-header {
+      border-top: 2px solid var(--border-light);
+    }
+    .rayon-section-label {
+      font-size: .78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      color: var(--text-muted);
+    }
+    .rayon-section-link {
+      font-size: .75rem;
+      color: var(--copper);
+      font-weight: 700;
+      text-decoration: none;
+    }
+    .rayon-section-link:hover { text-decoration: underline; }
+
+    /* Ligne article */
+    .list-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 13px 18px;
+      border-bottom: 1px solid var(--border-light);
+      transition: background .1s;
+    }
+    .list-row:last-child { border-bottom: none; }
+    .list-row:hover { background: var(--bg); }
+    .list-row.done { opacity: .5; }
+    .list-row.done .lr-name { text-decoration: line-through; color: var(--text-light); }
+
+    /* Checkbox */
+    .lr-check {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      appearance: none; -webkit-appearance: none;
+      cursor: pointer;
+      flex-shrink: 0;
+      position: relative;
+      transition: all .15s;
+    }
+    .lr-check:checked { background: var(--copper); border-color: var(--copper); }
+    .lr-check:checked::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2 6l3 3 5-5' stroke='white' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") center/70% no-repeat;
+    }
+    .lr-check:hover:not(:checked) { border-color: var(--copper); }
+
+    /* Nom */
+    .lr-name {
+      flex: 1;
+      font-size: .95rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    /* Qty pill */
+    .lr-qty {
+      font-size: .82rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      background: var(--bg);
+      border: 1px solid var(--border-light);
+      border-radius: 20px;
+      padding: 2px 10px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    /* Delete */
+    .lr-del {
+      width: 30px; height: 30px;
+      border: none; background: none;
+      color: var(--border);
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 6px;
+      transition: all .15s;
+      flex-shrink: 0;
+    }
+    .lr-del svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+    .lr-del:hover { background: var(--danger-light); color: var(--danger); }
+
+    /* Empty */
+    .list-empty {
+      text-align: center;
+      padding: 64px 24px;
+      color: var(--text-muted);
+    }
+    .list-empty-icon {
+      width: 56px; height: 56px;
+      background: var(--accent-light);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 16px;
+    }
+    .list-empty-icon svg { width: 26px; height: 26px; stroke: var(--copper); fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+    .list-empty strong { display: block; font-family: var(--font-display); font-size: 1.3rem; font-weight: 700; color: var(--espresso); margin-bottom: 8px; }
+    .list-empty p { font-size: .875rem; line-height: 1.6; }
+
+    /* Guest */
+    .guest-wrap { text-align: center; padding: 80px 24px; }
+    .guest-wrap h2 { font-family: var(--font-display); font-size: 1.8rem; font-weight: 700; color: var(--espresso); margin-bottom: 12px; }
+    .guest-wrap p { color: var(--text-muted); margin-bottom: 28px; line-height: 1.7; }
+    .guest-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+    @media (max-width: 600px) {
+      .app-wrap { padding: 28px 16px 60px; }
+      .app-topbar { flex-direction: column; align-items: flex-start; }
+      .pstrip-counts { gap: 14px; }
+      .app-search input, .app-search input:focus { width: 100%; }
+      .app-search { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<header class="site-header">
+  <div class="container">
+    <div class="header-inner">
+      <a href="index.html" class="logo">Fresh<span>List</span></a>
+      <nav class="site-nav">
+        <a href="index.html" class="nav-link">Accueil</a>
+        <a href="app.html"   class="nav-link active">Ma liste</a>
+        <a href="about.html" class="nav-link">À propos</a>
+      </nav>
+      <div class="header-right">
+        <div id="nav-auth">
+          <button class="btn btn-secondary" onclick="openModal('login')" style="margin-right:8px">Se connecter</button>
+          <button class="btn btn-primary" onclick="openModal('register')">Créer un compte</button>
+        </div>
+        <div id="nav-user" style="display:none" class="user-badge">
+          <div class="user-avatar" id="user-avatar">A</div>
+          <div class="user-info">
+            <span class="user-name" id="user-name">Andreas</span>
+            <span class="user-email" id="user-email"></span>
+          </div>
+          <button class="btn-logout" onclick="logout()">Déconnexion</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Modal auth -->
+<div class="overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-stripe"></div>
+    <button class="modal-close" onclick="closeModal()">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="modal-body auth-form" data-form="login">
+      <h2 class="modal-title">Bon retour.</h2>
+      <p class="modal-sub">Connectez-vous pour accéder à vos listes.</p>
+      <div class="form-group"><label>E-mail</label>
+        <input class="form-control" type="email" id="login-email" placeholder="vous@exemple.com"></div>
+      <div class="form-group"><label>Mot de passe</label>
+        <input class="form-control" type="password" id="login-pass" placeholder="••••••••"></div>
+      <p class="error-msg" id="login-error"></p>
+      <button class="btn btn-primary btn-submit" onclick="doLogin()">Se connecter</button>
+      <div class="modal-switch">Pas de compte ? <a onclick="switchForm('register')">S'inscrire</a></div>
+    </div>
+    <div class="modal-body auth-form" data-form="register" style="display:none">
+      <h2 class="modal-title">Créer un compte.</h2>
+      <p class="modal-sub">Gratuit, rapide, sans publicité.</p>
+      <div class="form-group"><label>Prénom</label>
+        <input class="form-control" type="text" id="reg-name" placeholder="Votre prénom"></div>
+      <div class="form-group"><label>E-mail</label>
+        <input class="form-control" type="email" id="reg-email" placeholder="vous@exemple.com"></div>
+      <div class="form-group"><label>Mot de passe</label>
+        <input class="form-control" type="password" id="reg-pass" placeholder="Min. 6 caractères"></div>
+      <p class="error-msg" id="reg-error"></p>
+      <button class="btn btn-primary btn-submit" onclick="doRegister()">Créer mon compte</button>
+      <div class="modal-switch">Déjà un compte ? <a onclick="switchForm('login')">Se connecter</a></div>
+    </div>
+  </div>
+</div>
+<div id="toast"></div>
+
+<!-- ═══ MAIN ═══ -->
+<main>
+  <div class="app-wrap">
+
+    <!-- GUEST -->
+    <div id="guest-banner" style="display:none">
+      <div class="guest-wrap">
+        <div class="list-empty-icon" style="margin-bottom:20px">
+          <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        <h2>Connectez-vous pour voir vos listes</h2>
+        <p>Vos articles sont sauvegardés sous votre compte personnel.</p>
+        <div class="guest-actions">
+          <button class="btn btn-primary" onclick="openModal('login')">Se connecter</button>
+          <button class="btn btn-secondary" onclick="openModal('register')">Créer un compte</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- APP CONTENT -->
+    <div id="app-content">
+
+      <!-- TOP BAR -->
+      <div class="app-topbar">
+        <div>
+          <h1>Ma liste de courses</h1>
+          <div class="app-date" id="app-date"></div>
+        </div>
+        <div class="app-topbar-actions">
+          <a href="index.html" class="btn btn-secondary" style="text-decoration:none">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Ajouter
+          </a>
+          <button class="btn btn-danger" onclick="clearAllDone()">
+            <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+            Effacer achetés
+          </button>
+        </div>
+      </div>
+
+      <!-- PROGRESS STRIP -->
+      <div class="progress-strip">
+        <div class="pstrip-counts">
+          <div class="pstrip-count">
+            <div class="pstrip-num" id="stat-total">0</div>
+            <div class="pstrip-label">Total</div>
+          </div>
+          <div class="pstrip-count">
+            <div class="pstrip-num" id="stat-remain" style="color:var(--sienna)">0</div>
+            <div class="pstrip-label">Restants</div>
+          </div>
+          <div class="pstrip-count">
+            <div class="pstrip-num" id="stat-done" style="color:var(--success)">0</div>
+            <div class="pstrip-label">Achetés</div>
+          </div>
+        </div>
+        <div class="pstrip-bar-wrap">
+          <div class="pstrip-bar">
+            <div class="pstrip-fill" id="progress-fill" style="width:0%"></div>
+          </div>
+          <span class="pstrip-pct" id="progress-pct">0%</span>
+        </div>
+      </div>
+
+      <!-- RAYONS SHORTCUTS -->
+      <div class="rayon-shortcuts" id="rayon-shortcuts"></div>
+
+      <!-- TOOLBAR -->
+      <div class="app-toolbar">
+        <div class="filter-tabs">
+          <button class="ftab active" data-filter="all"     onclick="setFilter('all')">Tout</button>
+          <button class="ftab"        data-filter="pending" onclick="setFilter('pending')">À acheter</button>
+          <button class="ftab"        data-filter="done"    onclick="setFilter('done')">Achetés</button>
+        </div>
+        <div class="app-search">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="search-input" placeholder="Rechercher…" oninput="renderList()">
+        </div>
+      </div>
+
+      <!-- LISTE -->
+      <div class="list-card" id="item-list"></div>
+
+    </div><!-- /#app-content -->
+  </div>
+</main>
+
+<!-- ═══ FOOTER ═══ -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <span class="logo-footer">FreshList</span>
+        <p>Vos listes de courses organisées par rayon.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Rayons</h4>
+        <ul id="footer-cats"></ul>
+      </div>
+      <div class="footer-col">
+        <h4>Navigation</h4>
+        <ul>
+          <li><a href="index.html">Accueil</a></li>
+          <li><a href="about.html">À propos</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; 2025 <strong>FreshList</strong>. Tous droits réservés.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/data.js"></script>
+<script src="js/auth.js"></script>
+<script>
+let filterMode = 'all';
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Date
+  document.getElementById('app-date').textContent =
+    new Date().toLocaleDateString('fr-FR', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+
+  // Raccourcis rayons
+  const sc = document.getElementById('rayon-shortcuts');
+  if (sc) sc.innerHTML = CATEGORIES.map(c =>
+    `<a href="category.html?cat=${c.id}" class="rayon-chip">${c.label}</a>`
+  ).join('');
+
+  // Footer
+  const fc = document.getElementById('footer-cats');
+  if (fc) fc.innerHTML = CATEGORIES.slice(0,5).map(c =>
+    `<li><a href="category.html?cat=${c.id}">${c.label}</a></li>`
+  ).join('');
+
+  // Auth state
+  const user = getCurrentUser();
+  toggleView(!!user);
+  if (user) renderAll();
+
+  window.onAuthSuccess = () => { toggleView(true);  renderAll(); };
+  window.onLogout      = () => { toggleView(false); };
+});
+
+function toggleView(loggedIn) {
+  document.getElementById('guest-banner').style.display  = loggedIn ? 'none' : '';
+  document.getElementById('app-content').style.display   = loggedIn ? '' : 'none';
+}
+
+function setFilter(mode) {
+  filterMode = mode;
+  document.querySelectorAll('.ftab').forEach(b =>
+    b.classList.toggle('active', b.dataset.filter === mode)
+  );
+  renderList();
+}
+
+function renderAll() { renderStats(); renderList(); }
+
+function renderStats() {
+  const cart  = getCart();
+  const total = cart.length;
+  const done  = cart.filter(i => i.done).length;
+  const remain = total - done;
+  const pct   = total ? Math.round(done / total * 100) : 0;
+
+  setText('stat-total',  total);
+  setText('stat-done',   done);
+  setText('stat-remain', remain);
+  setText('progress-pct', pct + '%');
+
+  const fill = document.getElementById('progress-fill');
+  if (fill) fill.style.width = pct + '%';
+}
+
+function renderList() {
+  const container = document.getElementById('item-list');
+  if (!container) return;
+
+  const search = document.getElementById('search-input')?.value.trim().toLowerCase() || '';
+
+  let cart = getCart().filter(i => {
+    if (filterMode === 'done')    return i.done;
+    if (filterMode === 'pending') return !i.done;
+    return true;
+  }).filter(i =>
+    !search ||
+    i.name.toLowerCase().includes(search) ||
+    getCategoryLabel(i.category).toLowerCase().includes(search)
+  );
+
+  // ── LISTE VIDE ──
+  if (cart.length === 0) {
+    const isEmpty = getCart().length === 0;
+    container.innerHTML = `
+      <div class="list-empty">
+        <div class="list-empty-icon">
+          <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
+        </div>
+        <strong>${isEmpty ? 'Votre liste est vide' : 'Aucun article trouvé'}</strong>
+        <p>${isEmpty
+          ? 'Parcourez les rayons pour ajouter des articles.'
+          : 'Essayez un autre filtre ou terme de recherche.'
+        }</p>
+        ${isEmpty ? '<a href="index.html" class="btn btn-primary" style="margin-top:18px;text-decoration:none">Parcourir les rayons</a>' : ''}
+      </div>`;
+    return;
+  }
+
+  // ── GROUPER PAR CATÉGORIE ──
+  const groups = {};
+  cart.forEach(item => {
+    if (!groups[item.category]) groups[item.category] = [];
+    groups[item.category].push(item);
+  });
+
+  // ── RENDER GROUPES ──
+  container.innerHTML = Object.entries(groups).map(([catId, items], gi) => {
+    const cat      = getCategoryById(catId);
+    const catLabel = cat ? cat.label : 'Autre';
+
+    const rows = items.map(item => `
+      <div class="list-row ${item.done ? 'done' : ''}">
+        <input type="checkbox" class="lr-check" ${item.done ? 'checked' : ''}
+          onchange="toggleItem(${item.id})">
+        <span class="lr-name">${esc(item.name)}</span>
+        <span class="lr-qty">${item.qty} ${item.unit}</span>
+        <button class="lr-del" onclick="deleteItem(${item.id})" title="Supprimer">
+          <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+        </button>
+      </div>
+    `).join('');
+
+    const sep = gi > 0 ? 'border-top:2px solid var(--border-light)' : '';
+
+    return `
+      <div style="${sep}">
+        <div class="rayon-section-header">
+          <span class="rayon-section-label">${catLabel}</span>
+          <a href="category.html?cat=${catId}" class="rayon-section-link">+ Ajouter dans ce rayon</a>
+        </div>
+        ${rows}
+      </div>
+    `;
+  }).join('');
+}
+
+// ── ACTIONS ──
+function toggleItem(id) {
+  const cart = getCart();
+  const item = cart.find(i => i.id === id);
+  if (item) { item.done = !item.done; saveCart(cart); renderAll(); }
+}
+
+function deleteItem(id) {
+  saveCart(getCart().filter(i => i.id !== id));
+  renderAll();
+  updateHeaderUI();
+  showToast('Article supprimé.');
+}
+
+function clearAllDone() {
+  const cart  = getCart();
+  const count = cart.filter(i => i.done).length;
+  if (!count) { showToast('Aucun article coché à effacer.'); return; }
+  saveCart(cart.filter(i => !i.done));
+  renderAll();
+  updateHeaderUI();
+  showToast(`${count} article${count > 1 ? 's' : ''} effacé${count > 1 ? 's' : ''}.`);
+}
+
+function esc(s) {
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function setText(id, v) { const el = document.getElementById(id); if (el) el.textContent = v; }
+</script>
+</body>
+</html>

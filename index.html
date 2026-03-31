@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FreshList — Vos courses organisées</title>
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/auth.css">
+  <link rel="stylesheet" href="css/home.css">
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<header class="site-header">
+  <div class="container">
+    <div class="header-inner">
+      <a href="index.html" class="logo">Fresh<span>List</span></a>
+      <nav class="site-nav">
+        <a href="index.html" class="nav-link active">Accueil</a>
+        <a href="app.html"   class="nav-link">Ma liste</a>
+        <a href="about.html" class="nav-link">À propos</a>
+      </nav>
+      <div class="header-right">
+        <div id="nav-auth">
+          <button class="btn btn-secondary" onclick="openModal('login')" style="margin-right:8px">Se connecter</button>
+          <button class="btn btn-primary" onclick="openModal('register')">Créer un compte</button>
+        </div>
+        <div id="nav-user" style="display:none" class="user-badge">
+          <div class="user-avatar" id="user-avatar">A</div>
+          <div class="user-info">
+            <span class="user-name" id="user-name">Andreas</span>
+            <span class="user-email" id="user-email"></span>
+          </div>
+          <a href="app.html" class="btn btn-primary" style="margin-right:8px;text-decoration:none">
+            Ma liste <span id="cart-count" style="background:rgba(255,255,255,.25);border-radius:20px;padding:1px 7px;font-size:.78rem;margin-left:4px">0</span>
+          </a>
+          <button class="btn-logout" onclick="logout()">Déconnexion</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Modal auth -->
+<div class="overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-stripe"></div>
+    <button class="modal-close" onclick="closeModal()">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="modal-body auth-form" data-form="login">
+      <h2 class="modal-title">Bon retour.</h2>
+      <p class="modal-sub">Connectez-vous pour accéder à vos listes.</p>
+      <div class="form-group"><label>E-mail</label>
+        <input class="form-control" type="email" id="login-email" placeholder="vous@exemple.com"></div>
+      <div class="form-group"><label>Mot de passe</label>
+        <input class="form-control" type="password" id="login-pass" placeholder="••••••••"></div>
+      <p class="error-msg" id="login-error"></p>
+      <button class="btn btn-primary btn-submit" onclick="doLogin()">Se connecter</button>
+      <div class="modal-switch">Pas de compte ? <a onclick="switchForm('register')">S'inscrire gratuitement</a></div>
+    </div>
+    <div class="modal-body auth-form" data-form="register" style="display:none">
+      <h2 class="modal-title">Créer un compte.</h2>
+      <p class="modal-sub">Gratuit, rapide, sans publicité.</p>
+      <div class="form-group"><label>Prénom</label>
+        <input class="form-control" type="text" id="reg-name" placeholder="Votre prénom"></div>
+      <div class="form-group"><label>E-mail</label>
+        <input class="form-control" type="email" id="reg-email" placeholder="vous@exemple.com"></div>
+      <div class="form-group"><label>Mot de passe</label>
+        <input class="form-control" type="password" id="reg-pass" placeholder="Min. 6 caractères"></div>
+      <p class="error-msg" id="reg-error"></p>
+      <button class="btn btn-primary btn-submit" onclick="doRegister()">Créer mon compte</button>
+      <div class="modal-switch">Déjà un compte ? <a onclick="switchForm('login')">Se connecter</a></div>
+    </div>
+  </div>
+</div>
+<div id="toast"></div>
+
+<!-- ═══ HERO ═══ -->
+<main>
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="container">
+      <div class="hero-content">
+        <p class="hero-eyebrow animate-fadeup">Votre assistant courses</p>
+        <h1 class="hero-title animate-fadeup delay-1">
+          Des courses<br><em>enfin organisées.</em>
+        </h1>
+        <p class="hero-desc animate-fadeup delay-2">
+          Parcourez les rayons, ajoutez vos articles en un clic, cochez au fil de vos achats. Propre, rapide, sans emoji.
+        </p>
+        <div class="hero-actions animate-fadeup delay-3">
+          <button class="btn btn-primary" onclick="openModal('register')">Commencer gratuitement</button>
+          <a href="app.html" class="btn btn-secondary">Voir ma liste</a>
+        </div>
+      </div>
+    </div>
+    <div class="hero-scroll">
+      <span>Découvrir</span>
+      <span class="scroll-arrow"></span>
+    </div>
+  </section>
+
+  <!-- ═══ RAYONS (catégories) ═══ -->
+  <section class="categories-section">
+    <div class="container">
+      <div class="section-header">
+        <p class="section-eyebrow">Nos rayons</p>
+        <h2 class="section-title">Choisissez <em>votre rayon</em></h2>
+      </div>
+      <div class="cat-grid" id="cat-grid">
+        <!-- généré par JS -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ FEATURES ═══ -->
+  <section class="features-section">
+    <div class="container">
+      <div class="section-header">
+        <p class="section-eyebrow">Pourquoi FreshList</p>
+        <h2 class="section-title">Simple, <em>efficace.</em></h2>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card animate-fadeup">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12l2 2 4-4"/></svg>
+          </div>
+          <h3>Articles préremplis</h3>
+          <p>Plus de 120 articles classés dans 9 rayons. Ajoutez d'un clic ce dont vous avez besoin.</p>
+        </div>
+        <div class="feature-card animate-fadeup delay-1">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          </div>
+          <h3>Rayons séparés</h3>
+          <p>Fruits, légumes, viandes, laitiers… Chaque rayon a sa propre page pour retrouver les bons articles.</p>
+        </div>
+        <div class="feature-card animate-fadeup delay-2">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          </div>
+          <h3>Suivi en direct</h3>
+          <p>Cochez les articles achetés. La progression s'affiche en temps réel sur votre liste.</p>
+        </div>
+        <div class="feature-card animate-fadeup delay-3">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+          <h3>Compte personnel</h3>
+          <p>Vos listes sont sauvegardées. Reprenez là où vous en étiez, à chaque connexion.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ IDEAS INNOVANTES ═══ -->
+  <section class="ideas-section">
+    <div class="container">
+      <div class="section-header">
+        <p class="section-eyebrow">À venir</p>
+        <h2 class="section-title">Idées <em>innovantes</em> pour la v2</h2>
+      </div>
+      <div class="ideas-grid">
+        <div class="idea-card animate-fadeup">
+          <div class="idea-num">01</div>
+          <h3>Scanner de code-barres</h3>
+          <p>Scanner un article avec la caméra du téléphone pour l'ajouter automatiquement à la liste avec son nom, sa marque et sa catégorie.</p>
+          <span class="idea-tag">Mobile</span>
+        </div>
+        <div class="idea-card animate-fadeup delay-1">
+          <div class="idea-num">02</div>
+          <h3>Liste partagée en temps réel</h3>
+          <p>Partager une liste de courses avec la famille ou les colocataires. Les ajouts et coches se synchronisent instantanément.</p>
+          <span class="idea-tag">Collaboration</span>
+        </div>
+        <div class="idea-card animate-fadeup delay-2">
+          <div class="idea-num">03</div>
+          <h3>Budget par article</h3>
+          <p>Associer un prix estimé à chaque article pour voir le total avant de passer en caisse. Alerte si on dépasse le budget fixé.</p>
+          <span class="idea-tag">Finance</span>
+        </div>
+        <div class="idea-card animate-fadeup delay-3">
+          <div class="idea-num">04</div>
+          <h3>Listes récurrentes</h3>
+          <p>Sauvegarder les articles qu'on achète chaque semaine comme modèle. Recharger en un clic pour la prochaine course.</p>
+          <span class="idea-tag">Gain de temps</span>
+        </div>
+        <div class="idea-card animate-fadeup delay-4">
+          <div class="idea-num">05</div>
+          <h3>Recettes → Ingrédients</h3>
+          <p>Choisir une recette et voir tous les ingrédients ajoutés automatiquement à la liste, avec les bonnes quantités.</p>
+          <span class="idea-tag">Smart</span>
+        </div>
+        <div class="idea-card animate-fadeup delay-5">
+          <div class="idea-num">06</div>
+          <h3>Historique & Statistiques</h3>
+          <p>Voir les articles achetés le plus souvent, le montant moyen dépensé par mois, les rayons les plus visités.</p>
+          <span class="idea-tag">Analytics</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ CTA ═══ -->
+  <section class="cta-band">
+    <div class="container">
+      <p class="section-eyebrow" style="justify-content:center">Commencer</p>
+      <h2 class="section-title">Prêt à organiser <em>vos courses ?</em></h2>
+      <p>Créez votre compte gratuit en 30 secondes et commencez à construire votre liste.</p>
+      <button class="btn btn-primary" onclick="openModal('register')">Créer mon compte gratuitement</button>
+    </div>
+  </section>
+</main>
+
+<!-- ═══ FOOTER ═══ -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <span class="logo-footer">FreshList</span>
+        <p>Gérez vos listes de courses par rayon, simplement et sans distraction.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Rayons</h4>
+        <ul id="footer-cats"></ul>
+      </div>
+      <div class="footer-col">
+        <h4>Compte</h4>
+        <ul>
+          <li><a href="#" onclick="openModal('register')">Créer un compte</a></li>
+          <li><a href="#" onclick="openModal('login')">Se connecter</a></li>
+          <li><a href="app.html">Ma liste</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; 2025 <strong>FreshList</strong>. Tous droits réservés.</span>
+      <span>120+ articles · 9 rayons · 0 publicité</span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/data.js"></script>
+<script src="js/auth.js"></script>
+<script>
+// ── Génère les cartes catégorie ──
+document.addEventListener('DOMContentLoaded', () => {
+  const grid = document.getElementById('cat-grid');
+  if (grid) {
+    grid.innerHTML = CATEGORIES.filter(c => c.id !== 'autre').map((cat, i) => `
+      <a href="category.html?cat=${cat.id}" class="cat-card animate-fadeup delay-${Math.min(i,5)}" data-cat="${cat.id}">
+        <div class="cat-card-img" style="background-image:url('${cat.img}')">
+          <!-- images/categories/${cat.id}.jpg -->
+        </div>
+        <div class="cat-card-body">
+          <div class="cat-card-name">${cat.label}</div>
+          <div class="cat-card-count">${getProductsByCategory(cat.id).length} articles disponibles</div>
+        </div>
+      </a>
+    `).join('');
+  }
+
+  // Footer cats
+  const fc = document.getElementById('footer-cats');
+  if (fc) {
+    fc.innerHTML = CATEGORIES.slice(0,5).map(c =>
+      `<li><a href="category.html?cat=${c.id}">${c.label}</a></li>`
+    ).join('');
+  }
+
+  window.onAuthSuccess = () => {
+    updateHeaderUI();
+    setTimeout(() => window.location.href='app.html', 600);
+  };
+});
+</script>
+</body>
+</html>
